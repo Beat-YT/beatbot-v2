@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+
+  <!-- Import -->
+  <link rel="stylesheet2" type="text/css" href="css/custom.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" href="css/animate.css">
+  <script src="https://kit.fontawesome.com/d32350101e.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+  <meta property="og:title" content="Neonite" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="index.html" />
+  <meta property="og:image" content="https://preview.daneric.dev/neonite/images/LogoTransparent.png" />
+  <meta property="og:description" content="Made by Beat (@TheBeatYT_evil on twitter)" />
+  <meta name="theme-color" content="#a74fff">
+  <link rel="shortcut icon" href="images/Neonite2.png" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta charset="utf-8">
+  <title>Home - Beatbot</title>
+
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/utilities.js"></script>
+  <script src="/js/account-service.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <nav class="navbar">
+      <ul class="navbar-module links">
+        <a href="./" class="active link boldfont">Home</a>
+        <a href="./tutorials.html" class="link boldfont">Tutorials</a>
+      </ul>
+      <ul class="navbar-module navbar-socials links">
+        <a href="/login" class="link boldfont">Log in</a>
+      </ul>
+    </nav>
+    <div class="tommy">
+      <main>
+        <div class="intro">
+          <h1 class="intro-header">
+            <img class="neonite-header" style="border-radius: 3px;" src="images/logo.png" />
+            <h1>BeatBot</h1><br>
+          </h1>
+
+          <h2>
+            <a class="typewrite intro-description" data-period="2000"
+              data-type='[ "The easiest and simplest fortnite lobby bot", "Working on phones and consoles"]'>
+              <span class="wrap"></span>
+            </a>
+            <br>
+            <br>
+
+
+            <button id="loginBtn" class="btn btn-epic" style="min-width:40%;">
+              <!--<img style=" height: 40px;" aria-hidden="true" src="images/epic.png">-->
+              Log in <i class="fa fa-sign-in" aria-hidden="true"></i>
+            </button>
+
+            <a href="/dashboard">
+              <button id="dashboardBtn" class="btn btn-epic" style="min-width:40%;">
+                <img style=" height: 40px; border-radius: 3px;" aria-hidden="true" src="/images/logo.png">
+                Dashboard</button>
+            </a>
+          </h2>
+        </div>
+    </div>
+    </br>
+    </br>
+
+    </br>
+    </br>
+    </br>
+
+    <div class="container second-main">
+      <main>
+        <h1copy class="copyright-text cuba text-center">This project is not Affiliated, Associated, Authorized or in any way Endorsed
+          by Epic Games, Inc.
+        </a> <br><br> Made with ❤️ by <a class="credits"
+            href="https://twitter.com/TheBeatYT_evil">Beat</a> | Website made by <a class="credits"
+            href="https://daneric.dev/">Daneric</a></h1copy>
+      </main>
+    </div>
+
+    <script src="/js/home.js"></script>
+
+</body>
+<script>
+  var TxtType = function (el, toRotate, period) {
+    this.toRotate = toRotate;
+    this.el = el;
+    this.loopNum = 0;
+    this.period = parseInt(period, 10) || 2000;
+    this.txt = '';
+    this.tick();
+    this.isDeleting = false;
+  };
+
+  TxtType.prototype.tick = function () {
+    var i = this.loopNum % this.toRotate.length;
+    var fullTxt = this.toRotate[i];
+
+    if (this.isDeleting) {
+      this.txt = fullTxt.substring(0, this.txt.length - 1);
+    } else {
+      this.txt = fullTxt.substring(0, this.txt.length + 1);
+    }
+
+    this.el.innerHTML = '<span class="wrap">' + this.txt + '</span>';
+
+    var that = this;
+    var delta = 200 - Math.random() * 100;
+
+    if (this.isDeleting) {
+      delta /= 2;
+    }
+
+    if (!this.isDeleting && this.txt === fullTxt) {
+      delta = this.period;
+      this.isDeleting = true;
+    } else if (this.isDeleting && this.txt === '') {
+      this.isDeleting = false;
+      this.loopNum++;
+      delta = 500;
+    }
+
+    setTimeout(function () {
+      that.tick();
+    }, delta);
+  };
+
+  window.onload = function () {
+    var elements = document.getElementsByClassName('typewrite');
+    for (var i = 0; i < elements.length; i++) {
+      var toRotate = elements[i].getAttribute('data-type');
+      var period = elements[i].getAttribute('data-period');
+      if (toRotate) {
+        new TxtType(elements[i], JSON.parse(toRotate), period);
+      }
+    }
+    // INJECT CSS
+    var css = document.createElement("style");
+    css.type = "text/css";
+    css.innerHTML = ".typewrite > .wrap { border-right: 0.08em solid #fff}";
+    document.body.appendChild(css);
+  };
+</script>
+
+</html>
