@@ -22,6 +22,45 @@ function eraseCookie(name) {
     document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
+// Assuming jsSHA has been loaded
+/**
+ * 
+ * @param {string} payload 
+ * @param {string} signature 
+ * @returns {string}
+ */
+function generateMMSHash(payload, signature) {
+    const salt = "Don'tMessWithMMS";
+    const shaObj = new jsSHA("SHA-1", "TEXT", { encoding: "UTF16LE" });
+
+    const raw = payload.substring(10, 20) + salt + signature.substring(2, 10);
+    shaObj.update(raw);
+    const hash = shaObj.getHash("HEX");
+
+    return hash.slice(4, 20).toUpperCase();
+}
+
+
+function getDefaultPlatform() {
+    try {
+        const user = navigator.userAgent.toLowerCase();
+
+        if (user.includes('xbox')) {
+            return "XBL";
+        } else if (user.includes('playstation')) {
+            return "PSN";
+        } else if (user.includes('nintendo')) {
+            return "SWT";
+        } else if (user.includes("mobile") || user.includes("android") || user.includes("ios") || user.includes('ipad') || user.includes('iphone')) {
+            return "AND";
+        } else {
+            return "WIN";
+        }
+    } catch {
+        return "WIN";
+    }
+}
+
 class ApiError extends Error {
     /**
      * 

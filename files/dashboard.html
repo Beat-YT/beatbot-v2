@@ -30,12 +30,23 @@
         referrerpolicy="no-referrer"></script>
 
     <script src="/js/utilities.js"></script>
+    
     <script src="/js/account-service.js"></script>
     <script src="/js/party-service.js"></script>
     <script src="/js/friends-service.js"></script>
+    <script src="/js/mcp-service.js"></script>
+    <script src="/js/matchmaking-service.js"></script>
+
     <script src="/js/fortnite-api.js"></script>
     <script src="/js/constants.js"></script>
     <script src="/js/xmpp.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.37/src/ua-parser.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jssha@3.3.1/dist/sha.min.js" referrerpolicy="" crossorigin="anonymous"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2911701426423067"
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -108,6 +119,11 @@
                 <i class="fas fa-desktop" style="min-height: 20px;"></i>&ensp;Platform
             </button>
 
+            <!--
+            <button id="statusBtn" class="btn btn-epic" style="min-width:30%;">
+                <i class="fas fa-globe" style="min-height: 20px;"></i>&ensp;Status
+            </button>
+            <br><br>-->
             <button id="friendsBtn" class="btn btn-epic" style="min-width:30%;">
                 <i class="fas fa-user-friends" style="min-height: 20px;"></i>&ensp;Friends
             </button>
@@ -122,7 +138,7 @@
                         class="credits" href="https://daneric.dev/">Daneric</a></h1copy>
             </main>
         </div>
-        <script src="/js/dashboard.js"></script>
+        <script src="/js/dashboard.js?v=2"></script>
 </body>
 
 </html>

@@ -5,20 +5,20 @@
 ;
 (
     async function () {
-        const accountService = new AccountService();
+        const session_j = localStorage.getItem('account_session_j');
+        const session = session_j && JSON.parse(session_j);
 
-        const s_token = getCookie('bearer-token');
+        if (session) {
+            const accountService = new AccountService(session);
 
-        if (s_token) {
-            const initState = await accountService.tryInit(s_token);
-
-            if (initState) {
+            try {
+                await accountService.verify()
                 return location.replace('/dashboard');
-            } else {
-                eraseCookie('bearer-token');
+            } catch {
+                localStorage.removeItem('account_session_j')
             }
         }
     }().catch((error) => {
-        Swal.fire('Whoops, something went wromng', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
+        Swal.fire('Whoops, something went wrong', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
     })
 );

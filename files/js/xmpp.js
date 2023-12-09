@@ -8,8 +8,9 @@ class Client extends EventTarget {
      * 
      * @param {Token} token 
      */
-    constructor(token, platform) {
+    constructor(token, platform, status) {
         super();
+        this.platform = platform;
         this.resource = `V2:Fortnite:${platform}::${generateUUID().replace(/-/g, '')}`;
         this.xmpp = client(
             {
@@ -62,13 +63,31 @@ class Client extends EventTarget {
     onOnline() {
         this.updatePresence(
             {
-                Status: "beatbot.beatbot.xyz - Made by @TheBeatYT_evil on twitter",
-                bIsPlaying: false,
-                bIsJoinable: false,
-                bHasVoiceSupport: false,
-                SessionId: "",
-                ProductName: "Fortnite",
-                Properties: {}
+                "Status": "Visit https://beatbot.neonite.net",
+                "bIsPlaying": false,
+                "bIsJoinable": true,
+                "bHasVoiceSupport": false,
+                "SessionId": "",
+                "ProductName": "Fortnite",
+                "Properties": {
+                    "KairosProfile_s": "{\r\n\t\"avatar\": \"cid_665_76747af2fc86324750e3ace39444972b484d4447355b51177f445d73d3aeed14\",\r\n\t\"avatarBackground\": \"[\\\"#FFDF00\\\",\\\"#FBA000\\\",\\\"#975B04\\\"]\",\r\n\t\"appInstalled\": \"init\"\r\n}",
+                    "party.joininfodata.286331153_j": {
+                        "bIsPrivate": true
+                    },
+                    "FortBasicInfo_j": {
+                        "homeBaseRating": 0
+                    },
+                    "FortLFG_I": "0",
+                    "FortPartySize_i": 1,
+                    "FortSubGame_i": 1,
+                    "InUnjoinableMatch_b": false,
+                    "FortGameplayStats_j": {
+                        "state": "",
+                        "playlist": "None",
+                        "numKills": 0,
+                        "bFellToDeath": false
+                    }
+                }
             }
         );
 

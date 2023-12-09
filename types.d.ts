@@ -371,6 +371,18 @@ interface FriendIncoming {
 
 
 interface settings {
+    AthenaCosmeticLoadout: {
+        backpackDef: string,
+        characterPrimaryAssetId: string,
+        characterDef: string,
+        pickaxeDef: string,
+        contrailDef: string,
+        contrailEKey: string,
+        pickaxeEKey: string,
+        backpackEKey: string,
+        characterEKey: string,
+        scratchpad: []
+    },
     acceptIncoming: boolean
     skin: string,
     pickaxe: string,
@@ -585,4 +597,13 @@ enum BannerName {
     MechaTeamBanner = "Mecha Team Banner",
     MonsterTeamBanner = "Monster Team Banner",
     WorldCup2019Banner = "World Cup 2019 Banner",
+}
+
+namespace Mcp {
+    export interface Ticket {
+        serviceUrl: string,
+        ticketType: string,
+        payload: string,
+        signature: string
+    }
 }

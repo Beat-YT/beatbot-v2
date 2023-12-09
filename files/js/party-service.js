@@ -93,7 +93,7 @@ class PartyService {
      * @param {string} pingerId 
      * @returns 
      */
-    async joinPartyFromPing(pingerId, JabberId) {
+    async joinPartyFromPing(pingerId, JabberId, plat) {
         const response = await fetch(
             `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/user/${this.session.account_id}/pings/${pingerId}/join`,
             {
@@ -108,7 +108,7 @@ class PartyService {
                         "connection": {
                             "id": JabberId,
                             "meta": {
-                                "urn:epic:conn:platform_s": "AND",
+                                "urn:epic:conn:platform_s": plat,
                                 "urn:epic:conn:type_s": "game"
                             },
                             "yield_leadership": false
@@ -121,7 +121,7 @@ class PartyService {
                                         {
                                             "id": this.session.account_id,
                                             "dn": this.session.displayName,
-                                            "plat": "AND",
+                                            "plat": plat,
                                             "data": JSON.stringify(
                                                 {
                                                     "CrossplayPreference_i": "1",
@@ -172,7 +172,7 @@ class PartyService {
     * @param {string} partyId 
     * @returns 
     */
-    async joinParty(partyId, JabberId) {
+    async joinParty(partyId, JabberId, plat) {
         const response = await fetch(
             `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${partyId}/members/${this.session.account_id}/join`,
             {
@@ -187,7 +187,7 @@ class PartyService {
                         connection: {
                             id: JabberId,
                             meta: {
-                                "urn:epic:conn:platform_s": "WIN",
+                                "urn:epic:conn:platform_s": plat,
                                 "urn:epic:conn:type_s": "game"
                             },
                             yield_leadership: false
@@ -200,7 +200,7 @@ class PartyService {
                                         {
                                             id: this.session.account_id,
                                             dn: this.session.displayName,
-                                            plat: "WIN",
+                                            plat: plat,
                                             data: JSON.stringify(
                                                 {
                                                     "CrossplayPreference_i": "1",

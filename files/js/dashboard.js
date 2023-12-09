@@ -4,14 +4,23 @@
 ;
 (
     async function () {
-        document.getElementById('logoutButton').onclick = function() {
-            eraseCookie('bearer-token');
+        const session_j = localStorage.getItem('account_session_j');
+        const session = session_j && JSON.parse(session_j);
+        const accountService = new AccountService(session);
+
+        try {
+            await accountService.verify()
+        } catch {
+            localStorage.removeItem('account_session_j');
+            return location.replace('/login');
+        }
+
+        document.getElementById('logoutButton').onclick = async function () {
+            await accountService.killSession();
+            localStorage.removeItem('account_session_j')
             document.location.replace('/')
         }
 
-        const s_token = getCookie('bearer-token');
-        const accountService = new AccountService();
-        await accountService.Init(s_token)
 
         document.getElementById('loggedAs').innerText += accountService.session.displayName
         document.getElementById('copyUsername').onclick = function () {
@@ -28,15 +37,47 @@
         const settings = s_settings ? JSON.parse(
             s_settings
         ) : {
+            status: null,
+            AthenaCosmeticLoadout: {
+                backpackDef: null,
+                characterPrimaryAssetId: 'AthenaCharacter:CID_001_Athena_Commando_F_Default',
+                characterDef: '/Game/Athena/Items/Cosmetics/Characters/CID_001_Athena_Commando_F_Default.CID_001_Athena_Commando_F_Default',
+                pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/DefaultPickaxe.DefaultPickaxe`,
+                contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
+                contrailEKey: "",
+                pickaxeEKey: "",
+                backpackEKey: "",
+                characterEKey: "",
+                scratchpad: []
+            },
             acceptIncoming: true,
             skin: 'CID_001_Athena_Commando_F_Default',
             pickaxe: 'DefaultPickaxe',
             backpackDef: null,
-            platform: 'WIN',
+            platform: null,
             skinVariants: {},
             bannerIcon: '',
             level: 1
         };
+
+        if (settings.platform == null) {
+            settings.platform = getDefaultPlatform();
+        }
+
+        if (!settings.AthenaCosmeticLoadout) {
+            settings.AthenaCosmeticLoadout = {
+                backpackDef: settings.backpackDef,
+                characterPrimaryAssetId: 'AthenaCharacter:CID_001_Athena_Commando_F_Default',
+                characterDef: '/Game/Athena/Items/Cosmetics/Characters/CID_001_Athena_Commando_F_Default.CID_001_Athena_Commando_F_Default',
+                pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/DefaultPickaxe.DefaultPickaxe`,
+                contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
+                contrailEKey: "",
+                pickaxeEKey: "",
+                backpackEKey: "",
+                characterEKey: "",
+                scratchpad: []
+            };
+        }
 
         const client = new Client(accountService.session, settings.platform);
         const friendsService = new FriendsService(accountService.session);
@@ -54,11 +95,49 @@
             const playerParty = await partyService.queryUser();
 
             if (playerParty.current[0]) {
-                await partyService.joinParty(playerParty.current[0].id, client.xmpp.jid.toString());
+                await partyService.joinParty(playerParty.current[0].id, client.xmpp.jid.toString(), settings.platform);
                 partyService.party = playerParty.current[0];
             }
         })
 
+        client.addEventListener(
+            'com.epicgames.social.party.notification.v0.MEMBER_STATE_UPDATED',
+            async ({ detail: data }) => {
+                if (data.account_id === accountService.session.account_id) return;
+
+                if ('Default:LobbyState_j' in data.member_state_updated) {
+                    await partyService.updateMemberMeta(
+                        {
+                            'Default:LobbyState_j': data.member_state_updated['Default:LobbyState_j']
+                        }
+                    )
+                } // "{"LobbyState":{"inGameReadyCheckStatus":"None","gameReadiness":"Ready","readyInputType":"MouseAndKeyboard","currentInputType":"MouseAndKeyboard","hiddenMatchmakingDelayMax":0,"hasPreloadedAthena":true}}"
+            }
+        )
+
+        client.addEventListener(
+            'com.epicgames.social.party.notification.v0.PARTY_UPDATED',
+            async ({ detail: data }) => {
+                partyService.party.meta = {
+                    ...partyService.party.meta,
+                    ...data.party_state_updated,
+                    ...data.party_state_overridden
+                }
+
+                if ('Default:PartyMatchmakingInfo_j' in data.party_state_updated) {
+                    // "{"PartyMatchmakingInfo":{"buildId":-1,"hotfixVersion":-1,"regionId":"","playlistName":"None","playlistRevision":0,"tournamentId":"","eventWindowId":"","linkCode":""}}"
+                    const partyMatchMakingInfo = JSON.parse(data.party_state_updated['Default:PartyMatchmakingInfo_j']).PartyMatchmakingInfo;
+                    if (partyMatchMakingInfo.buildId === -1) return;
+
+                    console.log('entering matchmaking', partyMatchMakingInfo);
+                    var ticket = await new McpService(session).getTicket([accountService.session.account_id, 'bff0779922d14863942d867cf3c39af1'], partyService.party.id, partyMatchMakingInfo);
+                    console.log(ticket);
+
+                    const matchmaking = new MatchmakingClient(ticket);
+                    matchmaking.connect();
+                }
+            }
+        )
 
         client.addEventListener('FRIENDSHIP_REQUEST', async (event) => {
             const data = event.detail;
@@ -105,11 +184,11 @@
                 if (partyService.party) {
                     await partyService.leaveParty();
                 }
-                await partyService.joinPartyFromPing(data.pinger_id, client.xmpp.jid.toString());
+
+                await partyService.joinPartyFromPing(data.pinger_id, client.xmpp.jid.toString(), settings.platform);
             }
         )
 
-        // party invite
         client.addEventListener('com.epicgames.social.party.notification.v0.MEMBER_KICKED',
             /**
              * 
@@ -126,7 +205,6 @@
             }
         )
 
-        // party invite
         client.addEventListener('com.epicgames.social.party.notification.v0.MEMBER_JOINED',
             /**
              * 
@@ -181,17 +259,7 @@
                                 }
                             },
                             "Default:AthenaCosmeticLoadout_j": {
-                                AthenaCosmeticLoadout: {
-                                    backpackDef: settings.backpackDef,
-                                    characterDef: `/Game/Athena/Items/Cosmetics/Characters/${settings.skin}.${settings.skin}`,
-                                    pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/${settings.pickaxe}.${settings.pickaxe}`,
-                                    contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
-                                    contrailEKey: "",
-                                    pickaxeEKey: "",
-                                    backpackEKey: "",
-                                    characterEKey: "",
-                                    scratchpad: []
-                                }
+                                AthenaCosmeticLoadout: settings.AthenaCosmeticLoadout
                             },
                             "Default:AthenaCosmeticLoadoutVariants_j": {
                                 AthenaCosmeticLoadoutVariants: {
@@ -223,7 +291,7 @@
                             "Default:Platform_j": {
                                 Platform: {
                                     platformDescription: {
-                                        name: "WIN",
+                                        name: settings.platform,
                                         platformType: "DESKTOP",
                                         onlineSubsystem: "None",
                                         sessionType: "",
@@ -296,6 +364,7 @@
                 {
                     title: 'Set emote',
                     input: 'text',
+
                     inputAttributes: {
                         autocapitalize: 'off',
                         autocomplete: 'on',
@@ -313,16 +382,18 @@
                      * @returns 
                      */
                     preConfirm: async (value) => {
-                        if (value.toLowerCase().startsWith('eid_')) {
-                            return value;
-                        }
-
                         const searchParams = new URLSearchParams(
                             {
-                                name: value,
                                 type: 'emote'
                             }
                         )
+
+                        if (value.toLowerCase().startsWith('eid_')) {
+                            searchParams.set('id', value);
+                        } else {
+                            searchParams.set('name', value);
+                        }
+
                         try {
                             /**
                              * @type {Datum}
@@ -344,13 +415,13 @@
                 if (result.isConfirmed) {
 
                     const emoteId = typeof result.value == 'string' ? result.value : result.value.id
-
+                    const emotePath = result.value.path.replace('FortniteGame/Content', '/Game').replace('FortniteGame/Plugins/GameFeatures/BRCosmetics/Content', '/BRCosmetics') + `.${emoteId}`;
 
                     partyService.updateMemberMeta(
                         {
                             "Default:FrontendEmote_j": {
                                 FrontendEmote: {
-                                    emoteItemDef: `/Game/Athena/Items/Cosmetics/Dances/${emoteId}.${emoteId}`,
+                                    emoteItemDef: emotePath,
                                     emoteEKey: "",
                                     emoteSection: -1
                                 }
@@ -401,10 +472,16 @@
 
                         const searchParams = new URLSearchParams(
                             {
-                                name: searchBox.value,
                                 type: 'outfit'
                             }
                         )
+
+                        if (searchBox.value.toLowerCase().startsWith('cid_')) {
+                            searchParams.set('id', searchBox.value);
+                        } else {
+                            searchParams.set('name', searchBox.value);
+                        }
+
                         try {
                             const outfit = await fetchAPI(
                                 `https://fortnite-api.com/v2/cosmetics/br/search?${searchParams}`
@@ -467,24 +544,18 @@
                 result => {
                     if (!result.isConfirmed) { return; }
                     settings.skinVariants = variants;
-                    settings.skin = typeof (result.value) == 'string' ? result.value : result.value.id;
+                    settings.skin = result.value.id;
                     const heroId = settings.skin.replace(/CID_/i, 'HID_');
+
+                    settings.AthenaCosmeticLoadout.characterDef = `/Game/Athena/Items/Cosmetics/Characters/${result.value.id}.${result.value.id}`;
+                    settings.AthenaCosmeticLoadout.characterPrimaryAssetId = `${result.value.type.backendValue}:${result.value.id}`
                     saveSettings(settings);
+
                     if (partyService.party) {
                         partyService.updateMemberMeta(
                             {
                                 "Default:AthenaCosmeticLoadout_j": {
-                                    AthenaCosmeticLoadout: {
-                                        backpackDef: settings.backpackDef,
-                                        characterDef: `/Game/Athena/Items/Cosmetics/Characters/${settings.skin}.${settings.skin}`,
-                                        pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/${settings.pickaxe}.${settings.pickaxe}`,
-                                        contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
-                                        contrailEKey: "",
-                                        pickaxeEKey: "",
-                                        backpackEKey: "",
-                                        characterEKey: "",
-                                        scratchpad: []
-                                    }
+                                    AthenaCosmeticLoadout: settings.AthenaCosmeticLoadout
                                 },
                                 "Default:CampaignHero_j": {
                                     CampaignHero: {
@@ -555,29 +626,22 @@
                             )
                         }
 
-                        
+
                     },
                     allowOutsideClick: () => !Swal.isLoading()
                 }
             ).then(
                 result => {
                     if (!result.isConfirmed) { return; };
-                    settings.backpackDef = result.value.path.replace("FortniteGame/Content", "/Game") + "." + result.value.id;
+                    const backpackDef = result.value.path.replace('FortniteGame/Content', '/Game').replace('FortniteGame/Plugins/GameFeatures/BRCosmetics/Content', '/BRCosmetics') + `.${result.value.id}`;
+                    settings.backpackDef = backpackDef;
+                    settings.AthenaCosmeticLoadout.backpackDef = backpackDef;
                     saveSettings(settings);
+
                     partyService.updateMemberMeta(
                         {
                             "Default:AthenaCosmeticLoadout_j": {
-                                AthenaCosmeticLoadout: {
-                                    backpackDef: settings.backpackDef,
-                                    characterDef: `/Game/Athena/Items/Cosmetics/Characters/${settings.skin}.${settings.skin}`,
-                                    pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/${settings.pickaxe}.${settings.pickaxe}`,
-                                    contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
-                                    contrailEKey: "",
-                                    pickaxeEKey: "",
-                                    backpackEKey: "",
-                                    characterEKey: "",
-                                    scratchpad: []
-                                }
+                                AthenaCosmeticLoadout: settings.AthenaCosmeticLoadout
                             },
                             "Default:FrontendEmote_j": {
                                 FrontendEmote: {
@@ -635,21 +699,15 @@
                 result => {
                     if (!result.isConfirmed) { return; };
                     settings.pickaxe = result.value.id;
+
+                    const pickaxeDef = result.value.path.replace('FortniteGame/Content', '/Game').replace('FortniteGame/Plugins/GameFeatures/BRCosmetics/Content', '/BRCosmetics') + `.${result.value.id}`;
+                    settings.AthenaCosmeticLoadout.pickaxeDef = pickaxeDef;
                     saveSettings(settings);
+
                     partyService.updateMemberMeta(
                         {
                             "Default:AthenaCosmeticLoadout_j": {
-                                AthenaCosmeticLoadout: {
-                                    backpackDef: settings.backpackDef,
-                                    characterDef: `/Game/Athena/Items/Cosmetics/Characters/${settings.skin}.${settings.skin}`,
-                                    pickaxeDef: `/Game/Athena/Items/Cosmetics/Pickaxes/${settings.pickaxe}.${settings.pickaxe}`,
-                                    contrailDef: `/Game/Athena/Items/Cosmetics/Contrails/DefaultContrail.DefaultContrail`,
-                                    contrailEKey: "",
-                                    pickaxeEKey: "",
-                                    backpackEKey: "",
-                                    characterEKey: "",
-                                    scratchpad: []
-                                }
+                                AthenaCosmeticLoadout: settings.AthenaCosmeticLoadout
                             },
                             "Default:FrontendEmote_j": {
                                 FrontendEmote: {
@@ -678,7 +736,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Set',
                     didOpen: async (html) => {
-                        Swal.showLoading();html.tagName
+                        Swal.showLoading(); html.tagName
 
                         banners = await bannersPromise;
 
@@ -802,6 +860,7 @@
                         settings.platform = result.value == 'none' ? '' : result.value;
                         saveSettings(settings);
                         location.reload();
+
                     }
                 }
             );
@@ -898,9 +957,46 @@
             )
 
         }
+
+        /*document.getElementById('statusBtn').onclick = function () {
+            /**
+             * @type {string[]}
+             *//*
+  const friendsRemoved = [];
+
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.value = '1';
+  input.id = 'swal2-checkbox';
+  input.checked = settings.acceptIncoming;
+
+  Swal.fire(
+      {
+          title: 'Set in-game status',
+          confirmButtonText: 'Apply',
+          showCancelButton: true,
+          input: 'text',
+          inputAttributes: {
+              autocapitalize: 'off',
+              autocomplete: 'on',
+              placeholder: "beatbot.neonite.net - The best LobbyBot"
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Set',
+      }
+  ).then(
+      result => {
+          if (!result.isConfirmed) {
+              return;
+          }
+
+      }
+  )
+
+}*/
     }().catch((error) => {
         if (error instanceof ApiError && error.numericErrorCode == 1014) {
-            eraseCookie('bearer-token');
+            localStorage.removeItem('account_session_j');
             return location.replace('/login');
         }
 

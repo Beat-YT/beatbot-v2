@@ -6,38 +6,47 @@ class AccountService {
     * @param {Token} session 
     */
     constructor(session) {
-        this.session = session;
-    }
+        if (session) {
+            const expiration = new Date(session.expires_at);
 
-    async Init(token) {
-        this.session = { access_token: token };
-        const verifyData = await this.verify();
-        this.session = mapVerifyToken(verifyData);
-    }
-
-    async tryInit(token) {
-        try {
-            this.session = { access_token: token };
-            const verifyData = await this.verify();
-            this.session = mapVerifyToken(verifyData);
-            return true;
-        } catch (error) {
-            this.session = null;
-            if (error instanceof ApiError && error.numericErrorCode == 1014) {
-                return null;
+            if (expiration.getTime() - 600000 >= Date.now()) {
+                this.session = session;
             }
-            throw error;
         }
     }
 
     /**
      * 
-     * @param {boolean} includePerms 
+     * @param {string} refresh_token 
+     */
+    async refresh(refresh_token) {
+        try {
+            const token = await this.getAccessToken(
+                '98f7e42c2e3a4f86a74eb43fbb41ed39',
+                '0a2449a2-001a-451e-afec-3e812901c4d7',
+                'refresh_token',
+                { refresh_token: refresh_token }
+            );
+
+            this.session = token;
+            return true;
+        } catch (error) {
+            if (error instanceof ApiError && error.numericErrorCode == 18036) {
+                return false;
+            }
+            
+            throw error;
+        }
+    }
+
+
+    /**
+     * 
      * @returns {Promise<VerifyToken>}
      */
-    async verify(includePerms = false) {
+    async verify() {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/verify?includePerms=${includePerms}`,
+            `https://epic-account-proxy.neonite.net/account/api/oauth/verify`,
             {
                 headers: {
                     Authorization: `${this.session.token_type || 'bearer'} ${this.session.access_token}`,
@@ -59,10 +68,9 @@ class AccountService {
      * @param {string} secrect 
      * @param {string} grantType 
      * @param {Record<string,string>} fields 
-     * @param {boolean} includePerms 
      * @returns {Promise<Token>}
      */
-    async getAccessToken(clientId, secrect, grantType, fields, includePerms = false) {
+    async getAccessToken(clientId, secrect, grantType, fields) {
         const response = await fetch(
             'https://epic-account-proxy.neonite.net/account/api/oauth/token',
             {
@@ -70,7 +78,7 @@ class AccountService {
                     {
                         ...fields,
                         grant_type: grantType,
-                        includePerms: includePerms
+                        token_type: 'eg1'
                     }
                 ),
                 headers: {
@@ -115,11 +123,10 @@ class AccountService {
      */
     async killSession(accessToken) {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/sessions/kill/${accessToken}`,
+            `https://epic-account-proxy.neonite.net/account/api/oauth/sessions/kill/${accessToken ?? this.session.access_token}`,
             {
                 headers: {
-                    Authorization: `${this.session.token_type} ${this.session.access_token}`,
-                    Accept: 'application/json',
+                    Authorization: `${this.session.token_type ?? 'bearer'} ${accessToken ?? this.session.access_token}`
                 },
                 method: 'DELETE'
             }
@@ -180,7 +187,7 @@ class AccountService {
 
     async findAccountsByIds(...accountIds) {
         const searchParams = new URLSearchParams(
-            accountIds.map(x => ['accountId',x])
+            accountIds.map(x => ['accountId', x])
         );
 
         const response = await fetch(

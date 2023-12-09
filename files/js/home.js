@@ -7,21 +7,23 @@ var _loginAction = undefined;
         const loginBtn = document.getElementById('loginBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
 
-        const accountService = new AccountService();
 
-        const s_token = getCookie('bearer-token');
-        if (s_token) {
-            const initState = await accountService.tryInit(s_token)
-            if (initState) {
-                loginBtn.style.display = 'none';
-            } else {
+        const session_j = localStorage.getItem('account_session_j');
+        const session = session_j && JSON.parse(session_j) ;
+
+        if (session) {
+            loginBtn.style.display = 'none';
+            const accountService = new AccountService();
+            const refreshed = await accountService.refresh(session.refresh_token);
+
+            if (!refreshed) {
+                localStorage.removeItem('account_session_j');
                 dashboardBtn.style.display = 'none';
-                eraseCookie('bearer-token')
+                loginBtn.style.display = 'inline';
             }
         } else {
             dashboardBtn.style.display = 'none';
-        }
-
+        }        
     }().catch((error) => {
         Swal.fire('Whoops, something went wromng', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
     })
