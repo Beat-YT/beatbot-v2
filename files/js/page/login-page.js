@@ -1,5 +1,5 @@
-/// <reference path="../../types.d.ts"/>
-/// <reference path="../../sweetalert2.d.ts"/>
+/// <reference path="../../../types.d.ts"/>
+/// <reference path="../../../sweetalert2.d.ts"/>
 
 
 ;

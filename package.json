@@ -10,6 +10,7 @@
   "typings": "./types",
   "license": "ISC",
   "dependencies": {
+    "@types/express": "^4.17.21",
     "@types/xmpp__client": "^0.13.0",
     "express": "^4.18.2",
     "fs-extra": "^10.1.0",

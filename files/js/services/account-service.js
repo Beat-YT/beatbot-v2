@@ -1,4 +1,4 @@
-
+/// <reference path="../../../types.d.ts" />
 
 class AccountService {
     /**
@@ -93,7 +93,9 @@ class AccountService {
             throw await parseError(response);
         }
 
-        return await response.json();
+        const token = await response.json();
+        this.session = token;
+        return token;
     }
 
     /**

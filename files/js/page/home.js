@@ -1,4 +1,4 @@
-/// <reference path="../../types.d.ts"/>
+/// <reference path="../../../types.d.ts"/>
 
 var _loginAction = undefined;
 ;
@@ -9,21 +9,19 @@ var _loginAction = undefined;
 
 
         const session_j = localStorage.getItem('account_session_j');
-        const session = session_j && JSON.parse(session_j) ;
 
-        if (session) {
+        if (session_j) {
+            dashboardBtn.style.display = 'inline';
             loginBtn.style.display = 'none';
-            const accountService = new AccountService();
-            const refreshed = await accountService.refresh(session.refresh_token);
+            const session = await getUserSession();
 
-            if (!refreshed) {
-                localStorage.removeItem('account_session_j');
+            if (!session) {
                 dashboardBtn.style.display = 'none';
                 loginBtn.style.display = 'inline';
             }
         } else {
             dashboardBtn.style.display = 'none';
-        }        
+        }
     }().catch((error) => {
         Swal.fire('Whoops, something went wromng', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
     })

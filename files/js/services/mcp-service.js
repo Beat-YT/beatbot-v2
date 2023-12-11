@@ -23,7 +23,6 @@ class McpService {
                 "player.option.crossplayOptOut": "false",
                 "player.option.partyId": partyId,
                 "player.option.splitScreen": "false",
-                "party.WIN": "true",
                 "input.KBM": "true",
                 "player.input": "KBM",
                 "player.option.microphoneEnabled": "false",

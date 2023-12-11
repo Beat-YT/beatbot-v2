@@ -262,17 +262,40 @@ class PartyService {
 
         if (response.status != 204) {
             const error = await parseError(response);
-            if (error.numericErrorCode == 51018 && error.messageVars[1]) {
+
+            if (error.numericErrorCode == 51018 && error.messageVars?.[1]) {
                 var correctRevision = parseInt(error.messageVars[1]);
                 if (!isNaN(correctRevision)) {
                     partyMemeber.revision = correctRevision;
                     return this.updateMemberMeta.apply(this, arguments);
                 }
+            } else {
+                throw error;
             }
 
             throw error;
         }
 
         partyMemeber.revision++;
+    }
+
+    async promote(memberId) {
+        if (!this.party) {
+            throw new Error('Not in a party');
+        }
+
+        const response = await fetch(
+            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${this.party.id}/members/${memberId}/promote`,
+            {
+                method: 'POST',
+                headers: {
+                    Authorization: `${this.session.token_type} ${this.session.access_token}`
+                }
+            }
+        );
+
+        if (response.status != 204) {
+            throw await parseError(response);
+        }
     }
 }

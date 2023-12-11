@@ -1,3 +1,5 @@
+/// <reference path="../../UAParser.d.ts" />
+
 // https://stackoverflow.com/questions/14573223/set-cookie-and-get-cookie-with-javascript
 function setCookie(name, value, days) {
     var expires = "";
@@ -41,23 +43,29 @@ function generateMMSHash(payload, signature) {
 }
 
 
-function getDefaultPlatform() {
+async function getDefaultPlatform() {
     try {
-        const user = navigator.userAgent.toLowerCase();
+        const data = await UAParser().withClientHints();
 
-        if (user.includes('xbox')) {
-            return "XBL";
-        } else if (user.includes('playstation')) {
-            return "PSN";
-        } else if (user.includes('nintendo')) {
-            return "SWT";
-        } else if (user.includes("mobile") || user.includes("android") || user.includes("ios") || user.includes('ipad') || user.includes('iphone')) {
-            return "AND";
-        } else {
-            return "WIN";
+        if (data.device.type == 'mobile' || data.device.type == 'tablet') {
+            return 'AND';
         }
+
+        if (data.os.name == 'Xbox' || data.device.type == 'console') {
+            return 'XBL';
+        }
+
+        if (data.os.name == 'PlayStation') {
+            return 'PSN';
+        }
+
+        if (data.device.vendor == 'Nintendo') {
+            return 'SWT';
+        }
+
+        return 'WIN';
     } catch {
-        return "WIN";
+        return 'WIN';
     }
 }
 

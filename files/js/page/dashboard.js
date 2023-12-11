@@ -1,17 +1,12 @@
-/// <reference path="../../types.d.ts"/>
-
+/// <reference path="../../../types.d.ts"/>
+/// <reference path="../session-manager.js"/>
 
 ;
 (
     async function () {
-        const session_j = localStorage.getItem('account_session_j');
-        const session = session_j && JSON.parse(session_j);
-        const accountService = new AccountService(session);
+        const accountService = await getUserSession();
 
-        try {
-            await accountService.verify()
-        } catch {
-            localStorage.removeItem('account_session_j');
+        if (!accountService) { 
             return location.replace('/login');
         }
 
@@ -61,7 +56,9 @@
         };
 
         if (settings.platform == null) {
-            settings.platform = getDefaultPlatform();
+            console.log('platform not set')
+            settings.platform = await getDefaultPlatform();
+            console.log('platform set to', settings.platform)
         }
 
         if (!settings.AthenaCosmeticLoadout) {
@@ -103,21 +100,39 @@
         client.addEventListener(
             'com.epicgames.social.party.notification.v0.MEMBER_STATE_UPDATED',
             async ({ detail: data }) => {
-                if (data.account_id === accountService.session.account_id) return;
+                if (data.party_id != partyService.party.id) return;
 
-                if ('Default:LobbyState_j' in data.member_state_updated) {
+                const memeber = partyService.party.members.find(x => x.account_id == data.account_id);
+                memeber.meta = {
+                    ...memeber.meta,
+                    ...data.member_state_updated,
+                    ...data.member_state_overridden
+                }
+
+                const captain = partyService.party.members.find(x => x.role == 'CAPTAIN').account_id;
+                if ('Default:LobbyState_j' in data.member_state_updated && data.account_id != accountService.session.account_id && captain == data.account_id) {
                     await partyService.updateMemberMeta(
                         {
                             'Default:LobbyState_j': data.member_state_updated['Default:LobbyState_j']
                         }
                     )
-                } // "{"LobbyState":{"inGameReadyCheckStatus":"None","gameReadiness":"Ready","readyInputType":"MouseAndKeyboard","currentInputType":"MouseAndKeyboard","hiddenMatchmakingDelayMax":0,"hasPreloadedAthena":true}}"
+                }
             }
         )
 
         client.addEventListener(
             'com.epicgames.social.party.notification.v0.PARTY_UPDATED',
             async ({ detail: data }) => {
+                partyService.party.members = partyService.party.members.map(x => {
+                    if (data.captain_id == x.account_id) {
+                        x.role = 'CAPTAIN';
+                    } else {
+                        x.role = 'MEMBER';
+                    }
+
+                    return x;
+                })
+
                 partyService.party.meta = {
                     ...partyService.party.meta,
                     ...data.party_state_updated,
@@ -129,9 +144,24 @@
                     const partyMatchMakingInfo = JSON.parse(data.party_state_updated['Default:PartyMatchmakingInfo_j']).PartyMatchmakingInfo;
                     if (partyMatchMakingInfo.buildId === -1) return;
 
-                    console.log('entering matchmaking', partyMatchMakingInfo);
-                    var ticket = await new McpService(session).getTicket([accountService.session.account_id, 'bff0779922d14863942d867cf3c39af1'], partyService.party.id, partyMatchMakingInfo);
-                    console.log(ticket);
+                    const partyPlayersId = partyService.party.members.map(x => x.account_id);
+                    var ticket = await new McpService(accountService.session).getTicket(partyPlayersId, partyService.party.id, partyMatchMakingInfo);
+                    // decode base64 ticket and parse it as json
+                    try {
+                        const payload = JSON.parse(atob(ticket.payload));
+                        if (!payload.bucketId.includes('bots')) {
+                            Swal.fire(
+                                {
+                                    title: "Not going to a bot lobby",
+                                    text: `The account ${accountService.session.displayName} is too leveled to go to a bot lobby, create a new account and try again.`,
+                                    icon: 'warning'
+                                }
+                            )
+                        }
+                    } catch {
+                        
+                    }
+
 
                     const matchmaking = new MatchmakingClient(ticket);
                     matchmaking.connect();
@@ -139,53 +169,29 @@
             }
         )
 
-        client.addEventListener('FRIENDSHIP_REQUEST', async (event) => {
-            const data = event.detail;
-            console.log("FRIENDSHIP_REQUEST", event.detail, settings.acceptIncoming)
-            /*{
-                "type": "FRIENDSHIP_REQUEST",
-                "timestamp": "2022-04-26T22:42:47.490Z",
-                "from": "edecf7a882494f5e9ca9c6b61d9181cf",
-                "to": "bff0779922d14863942d867cf3c39af1",
-                "status": "PENDING"
-            }*/
-
-            if (data.status == "PENDING" && settings.acceptIncoming) {
-                const sender = await accountService.getById(data.from);
-                await friendsService.sendInviteOrAcceptInvite(data.from);
-
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    },
-                    icon: 'info',
-                    title: `Accepted a friend request from ${sender.displayName}`
-                })
-            }
-        })
-
-        // party invite
-        client.addEventListener('com.epicgames.social.party.notification.v0.PING',
-            /**
-             * 
-             * @param {{detail: XmppPing}}} param0 
-             */
+        client.addEventListener(
+            'com.epicgames.social.party.notification.v0.MEMBER_NEW_CAPTAIN',
             async ({ detail: data }) => {
-                if (data.ns != "Fortnite") {
-                    return;
+                if (data.account_id == accountService.session.account_id) {
+                    // promote old captain back because we are not a real player
+                    let captainId = partyService.party.members.find(x => x.role == 'CAPTAIN').account_id;
+                    if (captainId == accountService.session.account_id) {
+                        captainId = partyService.party.members.find(
+                            x => x.role == 'MEMBER' && x.account_id != accountService.session.account_id
+                        ).account_id;
+                    }
+                    captainId && await partyService.promote(captainId);
                 }
 
-                if (partyService.party) {
-                    await partyService.leaveParty();
-                }
+                partyService.party.members = partyService.party.members.map(x => {
+                    if (data.account_id == x.account_id) {
+                        x.role = 'CAPTAIN';
+                    } else {
+                        x.role = 'MEMBER';
+                    }
 
-                await partyService.joinPartyFromPing(data.pinger_id, client.xmpp.jid.toString(), settings.platform);
+                    return x;
+                })
             }
         )
 
@@ -199,6 +205,7 @@
                     return;
                 }
 
+                partyService.party.members = partyService.party.members.filter(x => x.account_id != data.account_id);
                 if (data.account_id == accountService.session.account_id) {
                     partyService.party = null;
                 }
@@ -303,6 +310,69 @@
                         }
                     )
                 }
+            }
+        )
+
+        client.addEventListener('com.epicgames.social.party.notification.v0.MEMBER_LEFT',
+            async ({ detail: data }) => {
+                if (data.ns != "Fortnite" || data.party_id != partyService.party.id) {
+                    return;
+                }
+
+                partyService.party.members = partyService.party.members.filter(x => x.account_id != data.account_id);
+                if (data.account_id == accountService.session.account_id) {
+                    partyService.party = null;
+                }
+            }
+        )
+
+        client.addEventListener('FRIENDSHIP_REQUEST', async (event) => {
+            const data = event.detail;
+            console.log("FRIENDSHIP_REQUEST", event.detail, settings.acceptIncoming)
+            /*{
+                "type": "FRIENDSHIP_REQUEST",
+                "timestamp": "2022-04-26T22:42:47.490Z",
+                "from": "edecf7a882494f5e9ca9c6b61d9181cf",
+                "to": "bff0779922d14863942d867cf3c39af1",
+                "status": "PENDING"
+            }*/
+
+            if (data.status == "PENDING" && settings.acceptIncoming) {
+                const sender = await accountService.getById(data.from);
+                await friendsService.sendInviteOrAcceptInvite(data.from);
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 9000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    },
+                    icon: 'info',
+                    title: `Accepted a friend request from ${sender.displayName}`
+                })
+            }
+        })
+
+        // party invite
+        client.addEventListener('com.epicgames.social.party.notification.v0.PING',
+            /**
+             * 
+             * @param {{detail: XmppPing}}} param0 
+             */
+            async ({ detail: data }) => {
+                if (data.ns != "Fortnite") {
+                    return;
+                }
+
+                if (partyService.party) {
+                    await partyService.leaveParty();
+                }
+
+                await partyService.joinPartyFromPing(data.pinger_id, client.xmpp.jid.toString(), settings.platform);
             }
         )
 
@@ -962,36 +1032,36 @@
             /**
              * @type {string[]}
              *//*
-  const friendsRemoved = [];
+const friendsRemoved = [];
 
-  const input = document.createElement('input');
-  input.type = 'checkbox';
-  input.value = '1';
-  input.id = 'swal2-checkbox';
-  input.checked = settings.acceptIncoming;
+const input = document.createElement('input');
+input.type = 'checkbox';
+input.value = '1';
+input.id = 'swal2-checkbox';
+input.checked = settings.acceptIncoming;
 
-  Swal.fire(
-      {
-          title: 'Set in-game status',
-          confirmButtonText: 'Apply',
-          showCancelButton: true,
-          input: 'text',
-          inputAttributes: {
-              autocapitalize: 'off',
-              autocomplete: 'on',
-              placeholder: "beatbot.neonite.net - The best LobbyBot"
-          },
-          showCancelButton: true,
-          confirmButtonText: 'Set',
-      }
-  ).then(
-      result => {
-          if (!result.isConfirmed) {
-              return;
-          }
+Swal.fire(
+{
+title: 'Set in-game status',
+confirmButtonText: 'Apply',
+showCancelButton: true,
+input: 'text',
+inputAttributes: {
+autocapitalize: 'off',
+autocomplete: 'on',
+placeholder: "beatbot.neonite.net - The best LobbyBot"
+},
+showCancelButton: true,
+confirmButtonText: 'Set',
+}
+).then(
+result => {
+if (!result.isConfirmed) {
+return;
+}
 
-      }
-  )
+}
+)
 
 }*/
     }().catch((error) => {

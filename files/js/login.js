@@ -5,21 +5,7 @@
 ;
 (
     async function () {
-        const storedSessionS = localStorage.getItem('client_session');
-        const storedSession = storedSessionS && JSON.parse(storedSessionS);
-
-        const accountService = new AccountService(storedSession);
-
-        if (!accountService.session) {
-            accountService.session = await accountService.getAccessToken(
-                '98f7e42c2e3a4f86a74eb43fbb41ed39',
-                '0a2449a2-001a-451e-afec-3e812901c4d7',
-                'client_credentials'
-            );
-
-            console.log('new session')
-            localStorage.setItem('client_session', JSON.stringify(accountService.session))
-        }
+        const accountService = await getClientSession();
 
 
         async function loginAction() {
@@ -57,33 +43,27 @@
                 intervalCounter++;
 
                 try {
-                    if (newWindow) {
-                        if (newWindow.closed) {
-                            clearInterval(interval);
-                            try {
-                                var token = await accountService.getAccessToken(
-                                    '98f7e42c2e3a4f86a74eb43fbb41ed39',
-                                    '0a2449a2-001a-451e-afec-3e812901c4d7',
-                                    'device_code',
-                                    { device_code: deviceCode.device_code }
-                                )
-                            } catch (error) {
-                                if (error instanceof ApiError && error.numericErrorCode == 1012) {
-                                    accountService.cancelPinAuth(deviceCode.user_code);
-                                    return;
-                                }
+                    if (!newWindow || !newWindow.closed) return;
+                    clearInterval(interval);
 
-                                throw error;
-                            }
-
-                            localStorage.setItem('account_session_j', JSON.stringify(token));
-                            location.replace('/dashboard');
-                        } else {
-                            
+                    try {
+                        var token = await accountService.getAccessToken(
+                            '98f7e42c2e3a4f86a74eb43fbb41ed39',
+                            '0a2449a2-001a-451e-afec-3e812901c4d7',
+                            'device_code',
+                            { device_code: deviceCode.device_code }
+                        )
+                    } catch (error) {
+                        if (error instanceof ApiError && error.numericErrorCode == 1012) {
+                            accountService.cancelPinAuth(deviceCode.user_code);
+                            return;
                         }
-                    } else {
 
+                        throw error;
                     }
+
+                    localStorage.setItem('account_session_j', JSON.stringify(token));
+                    location.replace('/dashboard');
                 } catch (error) {
                     Swal.fire('Whoops, something went wrong', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
                 }
@@ -92,6 +72,6 @@
 
         document.getElementById('loginBtn').onclick = loginAction;
     }().catch((error) => {
-        Swal.fire('Whoops, something went wromng', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
+        Swal.fire('Whoops, something went wrong', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
     })
 );
