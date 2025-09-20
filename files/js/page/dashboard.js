@@ -72,7 +72,8 @@
                 pickaxeEKey: "",
                 backpackEKey: "",
                 characterEKey: "",
-                scratchpad: []
+                scratchpad: [],
+                cosmeticStats: []
             };
         }
 
@@ -454,7 +455,8 @@
                     preConfirm: async (value) => {
                         const searchParams = new URLSearchParams(
                             {
-                                type: 'emote'
+                                type: 'emote',
+                                responseFlags: '1'
                             }
                         )
 
@@ -542,7 +544,8 @@
 
                         const searchParams = new URLSearchParams(
                             {
-                                type: 'outfit'
+                                type: 'outfit',
+                                responseFlags: '1'
                             }
                         )
 
@@ -619,6 +622,8 @@
 
                     settings.AthenaCosmeticLoadout.characterDef = `/Game/Athena/Items/Cosmetics/Characters/${result.value.id}.${result.value.id}`;
                     settings.AthenaCosmeticLoadout.characterPrimaryAssetId = `${result.value.type.backendValue}:${result.value.id}`
+                    settings.AthenaCosmeticLoadout.cosmeticStats = [];
+                    
                     saveSettings(settings);
 
                     if (partyService.party) {
@@ -673,7 +678,8 @@
                         const searchParams = new URLSearchParams(
                             {
                                 name: value,
-                                matchMethod: 'contains'
+                                matchMethod: 'contains',
+                                responseFlags: '1',
                             }
                         );
 
@@ -744,7 +750,8 @@
                             {
                                 name: value,
                                 type: 'pickaxe',
-                                matchMethod: 'contains'
+                                matchMethod: 'contains',
+                                responseFlags: '1',
                             }
                         );
 

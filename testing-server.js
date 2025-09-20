@@ -13,7 +13,7 @@ app.post('/report', express.json(), function(req, res) {
     res.send('Report received');
 });
 
-app.use(express.static('files', {
+app.use(express.static('build', {
     extensions: ['html']
 }));
 

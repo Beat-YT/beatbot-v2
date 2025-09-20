@@ -382,6 +382,7 @@ interface settings {
         backpackEKey: string,
         characterEKey: string,
         scratchpad: []
+        cosmeticStats: []
     },
     acceptIncoming: boolean
     skin: string,

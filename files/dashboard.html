@@ -4,46 +4,143 @@
 <head>
 
   <!-- Import -->
-  <link rel="stylesheet2" type="text/css" href="css/custom.css">
-  <link rel="stylesheet" type="text/css" href="css/style.css">
-  <link rel="stylesheet" href="css/animate.css">
-  <script src="https://kit.fontawesome.com/d32350101e.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet2" type="text/css" href="/css/custom.css">
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+  <link rel="stylesheet" type="text/css" href="/css/loadingRing.css">
+  <link rel="stylesheet" href="/css/animate.css">
+  <script src="https://kit.fontawesome.com/d02c8a8a14.js" crossorigin="anonymous"></script>
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
-
-  <!-- Primary Meta Tags -->
-  <title>Beatbot - Fortnite Bot Lobbies</title>
-  <meta name="title" content="Beatbot - Fortnite Bot Lobbies" />
-  <meta name="description" content="BOT LOBBIES, SKIN AND STYLES, EMOTES AND MORE. NO DISCORD, NO FEES, NO HASSLE." />
-
-  <!-- Open Graph -->
+  <meta property="og:title" content="Beatbot" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://beatbot.neonite.net/" />
-  <meta property="og:title" content="Beatbot - Fortnite Bot Lobbies" />
-  <meta property="og:description"
-    content="BOT LOBBIES, SKIN AND STYLES, EMOTES AND MORE. NO DISCORD, NO FEES, NO HASSLE." />
+  <meta property="og:url" content="index.html" />
   <meta property="og:image" content="/images/logo.png" />
-
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary" />
-  <meta property="twitter:url" content="https://beatbot.neonite.net/" />
-  <meta property="twitter:title" content="Beatbot - Fortnite Bot Lobbies" />
-  <meta property="twitter:description"
-    content="BOT LOBBIES, SKIN AND STYLES, EMOTES AND MORE. NO DISCORD, NO FEES, NO HASSLE." />
-  <meta property="twitter:image" content="/images/logo.png" />
-
-  <!-- Meta Tags Generated with https://metatags.io -->
-
-  <meta name="theme-color" content="#ff4a31">
-  <link rel="shortcut icon" href="/images/logo.png" />
-
+  <meta property="og:description" content="The easiest fortnite lobby bot" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="theme-color" content="#a74fff">
+  <link rel="shortcut icon" href="/images/logo.png" />
   <meta charset="utf-8">
-  <title>Home - Beatbot</title>
-  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="/js/session-manager.js"></script>
+  <title>Dashboard - Beatbot</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"
+    integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://unpkg.com/@xmpp/client@0.13.1/dist/xmpp.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+
+  <script src="/js/ua-parser.js"></script>
   <script src="/js/utilities.js"></script>
+  <script src="/js/session-manager.js"></script>
+
   <script src="/js/services/account-service.js"></script>
+  <script src="/js/services/party-service.js"></script>
+  <script src="/js/services/friends-service.js"></script>
+  <script src="/js/services/mcp-service.js"></script>
+  <script src="/js/services/matchmaking-service.js"></script>
+
+  <script src="/js/fortnite-api.js"></script>
+  <script src="/js/constants.js"></script>
+  <script src="/js/xmpp.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/jssha@3.3.1/dist/sha.min.js" referrerpolicy=""
+    crossorigin="anonymous"></script>
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2911701426423067"
     crossorigin="anonymous"></script>
 </head>
+
+<body>
+  <div class="container">
+    <nav class="navbar">
+      <ul class="navbar-module links">
+        <a href="./" class="link boldfont">Home</a>
+        <a href="./tutorials.html" class="link boldfont">Tutorials</a>
+      </ul>
+      <ul class="navbar-module navbar-socials links">
+        <a href="#" id="logoutButton" class="link boldfont">Log out</a>
+      </ul>
+    </nav>
+    <div class="tommy">
+      <main>
+        <div class="intro">
+          <h1 class="intro-header"><img class="neonite-header" style="max-height: 50px; border-radius: 3px;"
+              src="/images/logo.png" /> BeatBot</h1>
+          <noscript><br><br>
+            <h1 class="intro-header">You need javascript to run this app</h1><br>
+          </noscript>
+          <h2>
+            <sub class="intro-description">Dashboard</sub><br><br>
+            <h4><a id="loggedAs">Logged in as&ensp;</a>&ensp;<a href="javascript:void(0)" id="copyUsername"><i
+                  class="fas fa-copy"></a></i></h4>
+          </h2>
+
+          <div id="loadingRing">
+            <br>
+            <div class="lds-roller">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div id="main" class="text-center" style="display: none;">
+      <button id="emoteBtn" class="btn btn-epic" style="min-width:30%;">
+        <img style=" height: 40px;" aria-hidden="true" src="/images/emote.png"> Emote
+      </button>
+      <button id="outfitBtn" class="btn btn-epic" style="min-width:30%;">
+        <img style=" height: 40px;" aria-hidden="true" src="/images/outfit.png"> Outfit
+      </button>
+      <button id="backblingBtn" class="btn btn-epic" style="min-width:30%;">
+        <img style=" height: 40px;" aria-hidden="true" src="/images/backbling.png"> Back Bling
+      </button>
+      <br> <br>
+      <button id="pickaxeBtn" class="btn btn-epic" style="min-width:30%;">
+        <img style=" height: 40px;" aria-hidden="true" src="/images/pickaxe.png"> Harvesting Tool
+      </button>
+
+      <button id="bannerBtn" class="btn btn-epic" style="min-width:30%;">
+        <i class="fas fa-flag" style="min-height: 20px;"></i>&ensp;Banner
+      </button>
+
+      <hr style="background-color: gray;">
+
+      <button id="levelBtn" class="btn btn-epic" style="min-width:30%;">
+        <img style=" height: 40px;" aria-hidden="true" src="/images/Free_Pass.png"> Level
+      </button>
+
+      <button id="platformBtn" class="btn btn-epic" style="min-width:30%;">
+        <i class="fas fa-desktop" style="min-height: 20px;"></i>&ensp;Platform
+      </button>
+
+      <!--
+            <button id="statusBtn" class="btn btn-epic" style="min-width:30%;">
+                <i class="fas fa-globe" style="min-height: 20px;"></i>&ensp;Status
+            </button>
+            <br><br>-->
+      <button id="friendsBtn" class="btn btn-epic" style="min-width:30%;">
+        <i class="fas fa-user-friends" style="min-height: 20px;"></i>&ensp;Friends
+      </button>
+      <br> <br><br> <br><br>
+    </div>
+    </br>
+    </br>
+
+    <div class="container second-main">
+      <main>
+        <h1copy class="copyright-text cuba">Copyright © Justin Dupuis 2022 | Website designed by <a class="credits"
+            href="https://daneric.dev/">Daneric</a></h1copy>
+      </main>
+    </div>
+    <script src="/js/page/dashboard.js?v=3"></script>
+</body>
+
+</html>
