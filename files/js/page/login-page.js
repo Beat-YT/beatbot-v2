@@ -13,7 +13,7 @@
 
             try {
                 await accountService.verify()
-                return location.replace('/dashboard');
+                return location.replace('dashboard');
             } catch {
                 localStorage.removeItem('account_session_j')
             }

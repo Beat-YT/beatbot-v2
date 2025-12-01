@@ -7,13 +7,13 @@
         const accountService = await getUserSession();
 
         if (!accountService) {
-            return location.replace('/login');
+            return location.replace('login');
         }
 
         document.getElementById('logoutButton').onclick = async function () {
             await accountService.killSession();
             localStorage.removeItem('account_session_j')
-            document.location.replace('/')
+            document.location.replace('.')
         }
 
 
@@ -1072,7 +1072,7 @@
     }().catch((error) => {
         if (error instanceof ApiError && error.numericErrorCode == 1014) {
             localStorage.removeItem('account_session_j');
-            return location.replace('/login');
+            return location.replace('login');
         }
 
 

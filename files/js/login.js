@@ -63,7 +63,7 @@
                     }
 
                     localStorage.setItem('account_session_j', JSON.stringify(token));
-                    location.replace('/dashboard');
+                    location.replace('dashboard');
                 } catch (error) {
                     Swal.fire('Whoops, something went wrong', error instanceof ApiError ? error.errorMessage : error instanceof Error ? error.message : error, 'error');
                 }
