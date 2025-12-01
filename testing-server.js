@@ -13,8 +13,8 @@ app.post('/report', express.json(), function(req, res) {
     res.send('Report received');
 });
 
-app.use(express.static('build', {
+app.use(express.static('files', {
     extensions: ['html']
 }));
 
-app.listen(80, function() { console.log('Im listening')});
+app.listen(8083, function() { console.log('Im listening')});

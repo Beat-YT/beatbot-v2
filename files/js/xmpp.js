@@ -63,7 +63,7 @@ class Client extends EventTarget {
     onOnline() {
         this.updatePresence(
             {
-                "Status": "Visit https://beatbot.neonite.net",
+                "Status": "Playing Fortnite",
                 "bIsPlaying": false,
                 "bIsJoinable": true,
                 "bHasVoiceSupport": false,
