@@ -12,7 +12,7 @@ class FriendsService {
      */
     async queryFriendsSummary() {
         const response = await fetch(
-            `https://epic-friends-proxy.neonite.net/friends/api/v1/${this.session.account_id}/summary`,
+            `${PROXY_URL}/friends/api/v1/${this.session.account_id}/summary`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -38,7 +38,7 @@ class FriendsService {
      */
     async queryIncomingFriendRequests() {
         const response = await fetch(
-            `https://epic-friends-proxy.neonite.net/friends/api/v1/${this.session.account_id}/incoming`,
+            `${PROXY_URL}/friends/api/v1/${this.session.account_id}/incoming`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -64,7 +64,7 @@ class FriendsService {
      */
     async sendInviteOrAcceptInvite(friendId) {
         const response = await fetch(
-            `https://epic-friends-proxy.neonite.net/friends/api/v1/${this.session.account_id}/friends/${friendId}`,
+            `${PROXY_URL}/friends/api/v1/${this.session.account_id}/friends/${friendId}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`
@@ -84,7 +84,7 @@ class FriendsService {
     */
     async deleteFriendOrRejectInvite(friendId) {
         const response = await fetch(
-            `https://epic-friends-proxy.neonite.net/friends/api/v1/${this.session.account_id}/friends/${friendId}`,
+            `${PROXY_URL}/friends/api/v1/${this.session.account_id}/friends/${friendId}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`

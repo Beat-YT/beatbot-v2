@@ -6,7 +6,7 @@
     async function () {
         const accountService = await getUserSession();
 
-        if (!accountService) { 
+        if (!accountService) {
             return location.replace('/login');
         }
 
@@ -160,7 +160,7 @@
                             )
                         }
                     } catch {
-                        
+
                     }
 
 
@@ -623,7 +623,7 @@
                     settings.AthenaCosmeticLoadout.characterDef = `/Game/Athena/Items/Cosmetics/Characters/${result.value.id}.${result.value.id}`;
                     settings.AthenaCosmeticLoadout.characterPrimaryAssetId = `${result.value.type.backendValue}:${result.value.id}`
                     settings.AthenaCosmeticLoadout.cosmeticStats = [];
-                    
+
                     saveSettings(settings);
 
                     if (partyService.party) {
@@ -1035,42 +1035,40 @@
 
         }
 
-        /*document.getElementById('statusBtn').onclick = function () {
-            /**
-             * @type {string[]}
-             *//*
-const friendsRemoved = [];
+        document.getElementById('statusBtn').onclick = function () {
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.value = '1';
+            input.id = 'swal2-checkbox';
+            input.checked = settings.acceptIncoming;
 
-const input = document.createElement('input');
-input.type = 'checkbox';
-input.value = '1';
-input.id = 'swal2-checkbox';
-input.checked = settings.acceptIncoming;
+            Swal.fire(
+                {
+                    title: 'Set in-game status',
+                    confirmButtonText: 'Apply',
+                    showCancelButton: true,
+                    input: 'text',
+                    inputAttributes: {
+                        autocapitalize: 'off',
+                        autocomplete: 'on',
+                        placeholder: "Playing Fortnite"
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Set',
+                }
+            ).then(
+                result => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
 
-Swal.fire(
-{
-title: 'Set in-game status',
-confirmButtonText: 'Apply',
-showCancelButton: true,
-input: 'text',
-inputAttributes: {
-autocapitalize: 'off',
-autocomplete: 'on',
-placeholder: "beatbot.neonite.net - The best LobbyBot"
-},
-showCancelButton: true,
-confirmButtonText: 'Set',
-}
-).then(
-result => {
-if (!result.isConfirmed) {
-return;
-}
+                    client.setStatus(result.value);
+                    settings.customStatus = result.value;
+                    saveSettings(settings);
+                }
+            )
 
-}
-)
-
-}*/
+        }
     }().catch((error) => {
         if (error instanceof ApiError && error.numericErrorCode == 1014) {
             localStorage.removeItem('account_session_j');

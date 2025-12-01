@@ -1,3 +1,5 @@
+const PROXY_URL = "https://epic-multi-proxy.9840003.xyz";
+
 const DEFAULT_PARTY_META = Object.freeze(
     {
         "Default:MatchmakingLevel_U": "0",

@@ -14,7 +14,8 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="index.html" />
   <meta property="og:image" content="/images/logo.png" />
-  <meta property="og:description" content="The easiest fortnite lobby bot" />
+  <meta property="og:description"
+    content="Beatbot is a Fortnite lobby bot as a Web Application. It works on phones and consoles!" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#a74fff">
   <link rel="shortcut icon" href="/images/logo.png" />
@@ -29,6 +30,7 @@
   <script src="https://unpkg.com/@xmpp/client@0.13.1/dist/xmpp.min.js" crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>
 
+  <script src="/js/constants.js"></script>
   <script src="/js/ua-parser.js"></script>
   <script src="/js/utilities.js"></script>
   <script src="/js/session-manager.js"></script>
@@ -40,7 +42,6 @@
   <script src="/js/services/matchmaking-service.js"></script>
 
   <script src="/js/fortnite-api.js"></script>
-  <script src="/js/constants.js"></script>
   <script src="/js/xmpp.js"></script>
 
 
@@ -111,21 +112,21 @@
         <i class="fas fa-flag" style="min-height: 20px;"></i>&ensp;Banner
       </button>
 
-      <hr style="background-color: gray;">
-
       <button id="levelBtn" class="btn btn-epic" style="min-width:30%;">
         <img style=" height: 40px;" aria-hidden="true" src="/images/Free_Pass.png"> Level
       </button>
+
+      <hr style="background-color: gray;">
 
       <button id="platformBtn" class="btn btn-epic" style="min-width:30%;">
         <i class="fas fa-desktop" style="min-height: 20px;"></i>&ensp;Platform
       </button>
 
-      <!--
-            <button id="statusBtn" class="btn btn-epic" style="min-width:30%;">
-                <i class="fas fa-globe" style="min-height: 20px;"></i>&ensp;Status
-            </button>
-            <br><br>-->
+
+      <button id="statusBtn" class="btn btn-epic" style="min-width:30%;">
+        <i class="fas fa-globe" style="min-height: 20px;"></i>&ensp;Status
+      </button>
+
       <button id="friendsBtn" class="btn btn-epic" style="min-width:30%;">
         <i class="fas fa-user-friends" style="min-height: 20px;"></i>&ensp;Friends
       </button>

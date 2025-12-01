@@ -17,7 +17,7 @@ class PartyService {
      */
     async queryParty(partyId) {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${partyId}`,
+            `${PROXY_URL}/party/api/v1/Fortnite/parties/${partyId}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -42,7 +42,7 @@ class PartyService {
      */
     async queryUser() {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/user/${this.session.account_id}`,
+            `${PROXY_URL}/party/api/v1/Fortnite/user/${this.session.account_id}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -68,7 +68,7 @@ class PartyService {
     */
     async queryPartyFromPing(from, to) {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/user/${to}/pings/${from}/parties`,
+            `${PROXY_URL}/party/api/v1/Fortnite/user/${to}/pings/${from}/parties`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -95,7 +95,7 @@ class PartyService {
      */
     async joinPartyFromPing(pingerId, JabberId, plat) {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/user/${this.session.account_id}/pings/${pingerId}/join`,
+            `${PROXY_URL}/party/api/v1/Fortnite/user/${this.session.account_id}/pings/${pingerId}/join`,
             {
                 method: 'POST',
                 headers: {
@@ -151,7 +151,7 @@ class PartyService {
 
     async leaveParty() {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${this.party.id}/members/${this.session.account_id}`,
+            `${PROXY_URL}/party/api/v1/Fortnite/parties/${this.party.id}/members/${this.session.account_id}`,
             {
                 method: 'DELETE',
                 headers: {
@@ -174,7 +174,7 @@ class PartyService {
     */
     async joinParty(partyId, JabberId, plat) {
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${partyId}/members/${this.session.account_id}/join`,
+            `${PROXY_URL}/party/api/v1/Fortnite/parties/${partyId}/members/${this.session.account_id}/join`,
             {
                 method: 'POST',
                 headers: {
@@ -242,7 +242,7 @@ class PartyService {
 
         const partyMemeber = this.party.members.find(x => x.account_id == this.session.account_id);
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${this.party.id}/members/${this.session.account_id}/meta`,
+            `${PROXY_URL}/party/api/v1/Fortnite/parties/${this.party.id}/members/${this.session.account_id}/meta`,
             {
                 method: 'PATCH',
                 headers: {
@@ -285,7 +285,7 @@ class PartyService {
         }
 
         const response = await fetch(
-            `https://epic-party-proxy.neonite.net/party/api/v1/Fortnite/parties/${this.party.id}/members/${memberId}/promote`,
+            `${PROXY_URL}/party/api/v1/Fortnite/parties/${this.party.id}/members/${memberId}/promote`,
             {
                 method: 'POST',
                 headers: {

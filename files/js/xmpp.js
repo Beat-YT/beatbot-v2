@@ -30,7 +30,7 @@ class Client extends EventTarget {
             }
         );
 
-        this.xmpp.on('online', () => this.onOnline());
+        this.xmpp.on('online', () => this.onOnline(status));
 
         this.xmpp.start();
 
@@ -60,17 +60,47 @@ class Client extends EventTarget {
         this.xmpp.send(presence);
     }
 
-    onOnline() {
+    setStatus(status) {
         this.updatePresence(
             {
-                "Status": "Playing Fortnite",
+                "Status": status || "Playing Fortnite",
                 "bIsPlaying": false,
                 "bIsJoinable": true,
                 "bHasVoiceSupport": false,
                 "SessionId": "",
                 "ProductName": "Fortnite",
                 "Properties": {
-                    "KairosProfile_s": "{\r\n\t\"avatar\": \"cid_665_76747af2fc86324750e3ace39444972b484d4447355b51177f445d73d3aeed14\",\r\n\t\"avatarBackground\": \"[\\\"#FFDF00\\\",\\\"#FBA000\\\",\\\"#975B04\\\"]\",\r\n\t\"appInstalled\": \"init\"\r\n}",
+                    "party.joininfodata.286331153_j": {
+                        "bIsPrivate": true
+                    },
+                    "FortBasicInfo_j": {
+                        "homeBaseRating": 0
+                    },
+                    "FortLFG_I": "0",
+                    "FortPartySize_i": 1,
+                    "FortSubGame_i": 1,
+                    "InUnjoinableMatch_b": false,
+                    "FortGameplayStats_j": {
+                        "state": "",
+                        "playlist": "None",
+                        "numKills": 0,
+                        "bFellToDeath": false
+                    }
+                }
+            }
+        );
+    }
+
+    onOnline(status) {
+        this.updatePresence(
+            {
+                "Status": status || "Playing Fortnite",
+                "bIsPlaying": false,
+                "bIsJoinable": true,
+                "bHasVoiceSupport": false,
+                "SessionId": "",
+                "ProductName": "Fortnite",
+                "Properties": {
                     "party.joininfodata.286331153_j": {
                         "bIsPrivate": true
                     },

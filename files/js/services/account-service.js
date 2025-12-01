@@ -46,7 +46,7 @@ class AccountService {
      */
     async verify() {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/verify`,
+            `${PROXY_URL}/account/api/oauth/verify`,
             {
                 headers: {
                     Authorization: `${this.session.token_type || 'bearer'} ${this.session.access_token}`,
@@ -72,7 +72,7 @@ class AccountService {
      */
     async getAccessToken(clientId, secrect, grantType, fields) {
         const response = await fetch(
-            'https://epic-account-proxy.neonite.net/account/api/oauth/token',
+            `${PROXY_URL}/account/api/oauth/token`,
             {
                 body: new URLSearchParams(
                     {
@@ -104,7 +104,7 @@ class AccountService {
      */
     async killSessions(killType) {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/sessions/kill?killType=${killType}`,
+            `${PROXY_URL}/account/api/oauth/sessions/kill?killType=${killType}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -125,7 +125,7 @@ class AccountService {
      */
     async killSession(accessToken) {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/sessions/kill/${accessToken ?? this.session.access_token}`,
+            `${PROXY_URL}/account/api/oauth/sessions/kill/${accessToken ?? this.session.access_token}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type ?? 'bearer'} ${accessToken ?? this.session.access_token}`
@@ -145,7 +145,7 @@ class AccountService {
      */
     async initiatePinAuth(promt) {
         const response = await fetch(
-            'https://epic-account-proxy.neonite.net/account/api/oauth/deviceAuthorization',
+            `${PROXY_URL}/account/api/oauth/deviceAuthorization`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -172,7 +172,7 @@ class AccountService {
      */
     async cancelPinAuth(userCode) {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/oauth/deviceAuthorization/${userCode}`,
+            `${PROXY_URL}/account/api/oauth/deviceAuthorization/${userCode}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -193,7 +193,7 @@ class AccountService {
         );
 
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/public/account?${searchParams}`,
+            `${PROXY_URL}/account/api/public/account?${searchParams}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
@@ -216,7 +216,7 @@ class AccountService {
      */
     async getById(accountId) {
         const response = await fetch(
-            `https://epic-account-proxy.neonite.net/account/api/public/account/${accountId}`,
+            `${PROXY_URL}/account/api/public/account/${accountId}`,
             {
                 headers: {
                     Authorization: `${this.session.token_type} ${this.session.access_token}`,
