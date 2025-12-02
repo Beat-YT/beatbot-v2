@@ -13,7 +13,7 @@
             const logoutUrl = `https://www.epicgames.com/id/oauth-authorized/success`
             const final = `https://www.epicgames.com/id/login?user_code=${deviceCode.user_code}&client_id=98f7e42c2e3a4f86a74eb43fbb41ed39&prompt=login`;
 
-            let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=550,height=850,left=100,top=100`;
+            let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=600,height=850,left=100,top=100`;
 
             var newWindow = open(final, 'EpicLogin', params);
 
